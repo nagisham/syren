@@ -1,0 +1,26 @@
+{
+  "name": "@nagisham/syren",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "",
+  "keywords": [
+    "signal",
+    "storage",
+    "slice"
+  ],
+  "author": "Evgeniy Nage Nikulin (https://github.com/at-nage)",
+  "homepage": "https://github.com/nagisham/syren",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nagisham/syren.git"
+  },
+  "license": "MIT",
+  "main": "syren/index.js",
+  "types": "syren/index.d.ts",
+  "scripts": {
+    "push": "npm publish --access=public"
+  },
+  "dependencies": {
+    "@nagisham/standard": "^0.1.0"
+  }
+}
