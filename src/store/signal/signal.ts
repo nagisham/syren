@@ -3,7 +3,7 @@ import { is_not_null, is_null, struct, unpack } from '@nagisham/standard';
 import { event_engine, state_engine } from 'src/engine';
 
 import { StoreEvents, WithPrevious } from '../types';
-import { SignalStruct } from './types';
+import { SignalStruct } from './.types';
 
 export const signal = struct<SignalStruct>(<T>(initial?: T) => {
   const { get, set } = state_engine(initial);

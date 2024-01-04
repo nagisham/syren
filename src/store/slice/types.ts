@@ -7,6 +7,6 @@ export type Slice<T extends State | undefined> = Store<KeyAccessor<T>, StoreEven
 export type Middleware = <T>(api: StateEngine<T> & EventEngine<StoreEvents<T>>) => void;
 
 export type SliceStruct = {
-  <T extends State>(middlewares?: Middleware[]): Slice<T | undefined>;
   <T extends State>(initial: T, middlewares?: Middleware[]): Slice<T>;
+  <T extends State>(middlewares?: Middleware[]): Slice<T | undefined>;
 };
