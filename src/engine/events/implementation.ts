@@ -1,7 +1,7 @@
 import { LISTENING_PREFIX } from './constants';
-import { EventEngine, EventEngineDefaults, EventEngineState, Events, ListenOptions } from './types';
+import { EventEngine, EventEngineDefaults, EventEngineState, ListenOptions } from './types';
 
-export function event_engine<E extends Events>(defaults?: EventEngineDefaults) {
+export function event_engine<E>(defaults?: EventEngineDefaults) {
   const state: EventEngineState<E> = {};
 
   const get = <K extends keyof E>(type: K) => {

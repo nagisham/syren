@@ -15,14 +15,25 @@
     "url": "git+https://github.com/nagisham/syren.git"
   },
   "license": "MIT",
-  "main": "src/index.ts",
+  "main": "./dist/main.cjs.js",
+  "module": "./dist/main.es.js",
+  "typings": "./dist/main.d.ts",
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "build": "tsup src/index.ts --clean --outDir package/syren --format esm --dts --minify --sourcemap",
-    "lint": "tsc"
+    "build": "tsc && vite build",
+    "test": "vitest run",
+    "test:watch": "vitest watch"
   },
   "devDependencies": {
-    "tsup": "^8.0.1",
-    "typescript": "^5.3.3"
+    "@babel/core": "^7.23.6",
+    "@babel/preset-typescript": "^7.23.3",
+    "@babel/register": "^7.22.15",
+    "@types/node": "^20.10.5",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.10",
+    "vitest": "^1.1.0"
   },
   "dependencies": {
     "@nagisham/standard": "^0.1.0"
