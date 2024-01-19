@@ -1,7 +1,4 @@
-import { Lambda } from '@nagisham/standard';
-
 type Type = string | number | symbol;
-const default_type: symbol = Symbol('default_type');
 
 type Action<TYPE extends Type = Type, ARGS = void> = ARGS extends void
   ? { type: TYPE }
@@ -31,37 +28,34 @@ export type HandlersState<E> = {
   [K in keyof E]?: Handle<E[K]>[];
 };
 
-interface SingleState<STATE, API = any> {
-  get: () => Handle<STATE, API>[];
-  set: (options: { handlers: Handle<STATE>[] }) => void;
-}
-
-interface MultyState<STATE, API = any> {
-  get: <TYPE extends keyof STATE>(type: TYPE) => Handle<STATE[TYPE], API>[];
-  set: <TYPE extends keyof STATE>(options: { type: TYPE; handlers: Handle<STATE[TYPE]>[] }) => void;
+interface State<STATE, API = undefined> {
+  get: <TYPE extends keyof STATE>(
+    action: Action<TYPE, any>,
+  ) => Array<(args: STATE[TYPE], api: API) => void>;
+  set: <TYPE extends keyof STATE>(
+    action: Action<TYPE, any>,
+    handlers: Array<(args: STATE[TYPE], api: API) => void>,
+  ) => void;
 }
 
 interface HandlersStateConstructor {
-  <STATE, API = any>(): MultyState<STATE, API>;
-  <STATE, API = any>(default_type: Type): SingleState<STATE, API>;
+  <ARGS, API = undefined>(type?: Type): State<ARGS, API>;
 }
 
-export const handlers_state: HandlersStateConstructor = <STATE>(default_type?: Type) => {
-  const state: HandlersState<STATE> = {};
+export const handlers_state: HandlersStateConstructor = <ARGS, API = undefined>(type?: Type) => {
+  const state: Record<Type, Array<(args: ARGS, api: API) => void>> = {};
 
-  const get = <K extends keyof STATE>(type?: K) => {
-    const key = (default_type ?? type ?? 'default') as K;
+  const get = <TYPE extends Type>(action: Action<TYPE>) => {
+    const key = type ?? action?.type ?? 'default';
     return (state[key] ??= []);
   };
 
-  const set = <TYPE extends keyof STATE>({
-    type,
-    handlers,
-  }: {
-    type?: TYPE;
-    handlers: Handle<STATE[TYPE]>[];
-  }) => {
-    state[(default_type ?? type) as TYPE] = handlers;
+  const set = <TYPE extends Type>(
+    action: Action<TYPE>,
+    handlers: Array<(args: ARGS, api: API) => void>,
+  ) => {
+    const key = type ?? action?.type ?? 'default';
+    state[key] = handlers;
   };
 
   return { get, set };
@@ -91,7 +85,11 @@ function pipeline_api(): PipelineApi {
   };
 }
 
-function pipeline_runner<STATE>() {
+interface PipelineRunnerOptions {}
+
+function pipeline_runner<STATE>(options?: PipelineRunnerOptions) {
+  const {} = options ?? {};
+
   return <TYPE extends keyof STATE>(
     handlers: Handle<STATE[TYPE], PipelineApi>[],
     args: STATE[TYPE],
@@ -195,8 +193,8 @@ interface EngineConstructor {
   };
 }
 
-export const engine = (<STATE, API, RETURN>(
-  state: MultyState<STATE>,
+export const engine = <STATE, API, RETURN>(
+  state: State<STATE, any>,
   runner: <TYPE extends keyof STATE>(
     handlers: Handle<STATE[TYPE], API>[],
     args: STATE[TYPE],
@@ -205,10 +203,10 @@ export const engine = (<STATE, API, RETURN>(
   const { get, set } = state;
 
   function emit<TYPE extends keyof STATE>(action: Action<TYPE, STATE[TYPE]>) {
-    const handlers = get(action.type);
+    const handlers = get(action);
 
     // any because typescript is crazy here.
-    return runner(handlers as any, ('args' in action ? action.args : undefined) as any);
+    return runner(handlers, ('args' in action ? action.args : undefined) as any);
   }
 
   function register<TYPE extends keyof STATE>(
@@ -247,8 +245,8 @@ export const engine = (<STATE, API, RETURN>(
       Object.defineProperty(listener, 'name', { value: name });
     }
 
-    let handlers = get(type);
-    if (!handlers) set({ type, handlers: [] });
+    let handlers = get({ type });
+    if (!handlers) set({ type }, (handlers = []));
 
     switch (patch?.mode) {
       case 'prepend': {
@@ -292,7 +290,7 @@ export const engine = (<STATE, API, RETURN>(
   }
 
   return { emit, register };
-}) as EngineConstructor;
+};
 
 export function emitter<STATE>() {
   return engine(handlers_state<STATE>(), event_runner<STATE>());
