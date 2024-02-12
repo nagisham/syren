@@ -1,10 +1,11 @@
 import { pipeline } from "@nagisham/eventable";
-import { Arguments, Lambda, Provider, Returns } from "@nagisham/standard";
+import { Arguments, Lambda, Returns } from "@nagisham/standard";
 
 import { AccesserBehaviour } from "./types";
+import { State } from "../state";
 
 type Accesser<S, R extends Lambda = any> = {
-	(provider: Provider<S>): R;
+	(state: State<S>): R;
 };
 
 interface AccesserAdapter {
@@ -23,8 +24,8 @@ export const accesser: AccesserAdapter = <S, R extends Lambda = any>(
 		response: (arg) => arg.state,
 	});
 
-	return (provider: Provider<S>) => {
-		behaviours.forEach((behaviour) => behaviour(access, provider.get, provider.set));
+	return (state: State<S>) => {
+		behaviours.forEach((behaviour) => behaviour(access, state.get.emit, state.set.emit));
 		return access.emit as R;
 	};
 };

@@ -1,9 +1,8 @@
 import { pipeline } from "@nagisham/eventable";
-import { Provider } from "@nagisham/standard";
 
-import { StateBehaviour } from "./types";
+import { State, StateBehaviour } from "./types";
 
-export function state<T>(...behaviours: Array<StateBehaviour<T>>): Provider<T> {
+export function state<T>(...behaviours: Array<StateBehaviour<T>>): State<T> {
 	const get = pipeline({
 		request: () => ({} as { state: T }),
 		response: (arg) => arg.state,
@@ -21,9 +20,5 @@ export function state<T>(...behaviours: Array<StateBehaviour<T>>): Provider<T> {
 
 	behaviours.forEach((behaviour) => behaviour(get, set, del));
 
-	return {
-		get: get.emit,
-		set: set.emit,
-		delete: del.emit,
-	};
+	return { get, set, delete: del };
 }

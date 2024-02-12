@@ -7,6 +7,6 @@ export type AccesserBehaviour<T, R extends Lambda = any> = (
 		[params: Arguments<R>],
 		Returns<R> | undefined
 	>,
-	get: () => T,
+	get: () => T | undefined,
 	set: (value: T) => void,
 ) => void;
