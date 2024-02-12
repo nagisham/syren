@@ -2,12 +2,6 @@
   "name": "@nagisham/syren",
   "version": "1.0.0",
   "type": "module",
-  "description": "",
-  "keywords": [
-    "signal",
-    "storage",
-    "slice"
-  ],
   "author": "Evgeniy Nage Nikulin (https://github.com/at-nage)",
   "homepage": "https://github.com/nagisham/syren",
   "repository": {
@@ -15,25 +9,16 @@
     "url": "git+https://github.com/nagisham/syren.git"
   },
   "license": "MIT",
-  "main": "./dist/main.cjs.js",
-  "module": "./dist/main.es.js",
-  "typings": "./dist/main.d.ts",
-  "files": [
-    "dist"
-  ],
   "scripts": {
-    "build": "tsc && vite build",
+    "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest watch"
   },
   "devDependencies": {
-    "@babel/core": "^7.23.6",
-    "@babel/preset-typescript": "^7.23.3",
-    "@babel/register": "^7.22.15",
-    "@types/node": "^20.10.5",
+    "terser": "^5.27.0",
+    "tsup": "^8.0.1",
     "typescript": "^5.3.3",
-    "vite": "^5.0.10",
-    "vitest": "^1.1.0"
+    "vitest": "^1.2.2"
   },
   "dependencies": {
     "@nagisham/standard": "^0.1.0"

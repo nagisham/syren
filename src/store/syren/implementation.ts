@@ -1,37 +1,10 @@
-import { Lambda, is_array, is_not_null, is_number, is_string } from "@nagisham/standard";
+import type { Arguments, Lambda, Provider, Returns } from "@nagisham/standard";
+import { is_array, is_not_null, is_number, is_string } from "@nagisham/standard";
+import { pipeline } from "@nagisham/eventable";
+
 import { EventEngine, event_engine } from "src/engine";
 import { local_storage } from "./local_storage";
-import { Pipeline, PipelineRunner, pipeline } from "./pipeline";
-
-type Arguments<T extends Lambda> = T extends {
-	(...args: infer P1): any;
-	(...args: infer P2): any;
-	(...args: infer P3): any;
-	(...args: infer P4): any;
-}
-	? P1 | P2 | P3 | P4
-	: T extends { (...args: infer P1): any; (...args: infer P2): any; (...args: infer P3): any }
-	? P1 | P2 | P3
-	: T extends { (...args: infer P1): any; (...args: infer P2): any }
-	? P1 | P2
-	: T extends (...args: infer P) => any
-	? P
-	: never;
-
-type Returns<T extends Lambda> = T extends {
-	(...args: any): infer R1;
-	(...args: any): infer R2;
-	(...args: any): infer R3;
-	(...args: any): infer R4;
-}
-	? R1 | R2 | R3 | R4
-	: T extends { (...args: any): infer R1; (...args: any): infer R2; (...args: any): infer R3 }
-	? R1 | R2 | R3
-	: T extends { (...args: any): infer R1; (...args: any): infer R2 }
-	? R1 | R2
-	: T extends (...args: any) => infer R
-	? R
-	: never;
+import { Pipeline, PipelineRunner } from "./pipeline";
 
 interface StateArgs<T> {
 	state: T;
@@ -47,17 +20,16 @@ interface State<T> {
 	set: Pipeline<[next: T], StateArgs<T>, void>;
 }
 
-export function state_engine<T>(): State<T> {
-	const get = pipeline({
-		request: (): StateArgs<T | undefined> => ({ state: undefined }),
-		response: (arg) => arg.state,
-	});
-
-	const set = pipeline({
-		request: (next: T): StateArgs<T> => ({ state: next }),
-	});
-
-	return { get, set };
+export function state_engine<T>() {
+	return {
+		get: pipeline({
+			request: (): StateArgs<T | undefined> => ({ state: undefined }),
+			response: (arg) => arg.state,
+		}),
+		set: pipeline({
+			request: (next: T): StateArgs<T> => ({ state: next }),
+		}),
+	};
 }
 
 interface InMemoryState<T> {
@@ -509,7 +481,11 @@ syren2(
 	(state) => {
 		function fire() {}
 		function listen() {}
-		return { fire, listen };
+
+		return {
+			args: { fire, listen },
+			engine: { fire, listen },
+		};
 	},
 	(state, events) => {},
 );
