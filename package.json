@@ -10,6 +10,7 @@
   },
   "license": "MIT",
   "scripts": {
+    "link": "npm link @nagisham/standard && npm link @nagisham/eventable",
     "build": "tsup",
     "test": "vitest run",
     "test:watch": "vitest watch"
@@ -19,8 +20,5 @@
     "tsup": "^8.0.1",
     "typescript": "^5.3.3",
     "vitest": "^1.2.2"
-  },
-  "dependencies": {
-    "@nagisham/standard": "^0.1.0"
   }
 }

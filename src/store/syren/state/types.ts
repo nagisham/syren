@@ -1,6 +1,6 @@
 import { Pipeline } from "@nagisham/eventable";
 
-export type StateBehaviour<T = any> = {
+export type StateBehavior<T = any> = {
 	(
 		get: Pipeline<{ state?: T }, [], T | undefined>,
 		set: Pipeline<{ state: T }, [next: T], void>,

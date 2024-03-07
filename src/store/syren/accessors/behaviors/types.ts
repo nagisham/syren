@@ -1,4 +1,4 @@
-export type SingleAccesser<T> = {
+export type SingleAccessor<T> = {
 	(): T;
 	(next: Partial<T>): void;
 };

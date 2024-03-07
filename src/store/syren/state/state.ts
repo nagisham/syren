@@ -1,8 +1,8 @@
 import { pipeline } from "@nagisham/eventable";
 
-import { State, StateBehaviour } from "./types";
+import { State, StateBehavior } from "./types";
 
-export function state<T>(...behaviours: Array<StateBehaviour<T>>): State<T> {
+export function state<T>(...behaviors: Array<StateBehavior<T>>): State<T> {
 	const get = pipeline({
 		request: () => ({} as { state: T }),
 		response: (arg) => arg.state,
@@ -18,7 +18,7 @@ export function state<T>(...behaviours: Array<StateBehaviour<T>>): State<T> {
 		response: (arg) => arg.deleted,
 	});
 
-	behaviours.forEach((behaviour) => behaviour(get, set, del));
+	behaviors.forEach((behavior) => behavior(get, set, del));
 
 	return { get, set, delete: del };
 }

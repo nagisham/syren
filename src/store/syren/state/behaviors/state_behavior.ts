@@ -1,8 +1,8 @@
 import { Provider, is_not_null } from "@nagisham/standard";
 
-import { StateBehaviour } from "../types";
+import { StateBehavior } from "../types";
 
-export function state_behaviour<VALUE>(provider: Provider<VALUE>): StateBehaviour<VALUE> {
+export function state_behavior<VALUE>(provider: Provider<VALUE>): StateBehavior<VALUE> {
 	return (get, set, del) => {
 		get.register({
 			handler: (arg, api) => {

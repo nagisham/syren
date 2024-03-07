@@ -1,13 +1,13 @@
 import { is_array } from "@nagisham/standard";
 
-import { AccesserBehaviour } from "../types";
-import { SingleAccesser } from "./types";
+import { AccessorBehavior } from "../types";
+import { SingleAccessor } from "./types";
 
-export function single_accesser_behaviour<T>(): AccesserBehaviour<T, SingleAccesser<T>> {
-	return (accesser, get, set) => {
-		accesser.register({
+export function single_accessor_behavior<T>(): AccessorBehavior<T, SingleAccessor<T>> {
+	return (accessor, get, set) => {
+		accessor.register({
 			handler: {
-				name: "get-state-as-single-accesser",
+				name: "get-state-as-single-accessor",
 				handle: (arg, api) => {
 					const { params } = arg;
 
@@ -19,9 +19,9 @@ export function single_accesser_behaviour<T>(): AccesserBehaviour<T, SingleAcces
 			},
 		});
 
-		accesser.register({
+		accessor.register({
 			handler: {
-				name: "set-state-as-single-accesser",
+				name: "set-state-as-single-accessor",
 				handle: (arg, api) => {
 					const { params } = arg;
 

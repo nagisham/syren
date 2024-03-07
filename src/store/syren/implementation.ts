@@ -1,4 +1,4 @@
-import type { Arguments, Lambda, Provider, Returns } from "@nagisham/standard";
+import type { Arguments, Lambda, Returns } from "@nagisham/standard";
 import { is_array, is_not_null, is_number, is_string } from "@nagisham/standard";
 import { pipeline } from "@nagisham/eventable";
 
@@ -10,7 +10,7 @@ interface StateArgs<T> {
 	state: T;
 }
 
-type StateBehaviour<T = any> = (
+type StateBehavior<T = any> = (
 	get: Pipeline<[], StateArgs<T>, T>,
 	set: Pipeline<[next: T], StateArgs<T>, void>,
 ) => void;
@@ -36,7 +36,7 @@ interface InMemoryState<T> {
 	current: T | undefined;
 }
 
-export function in_memory_state_behaviour<T>(): StateBehaviour<T> {
+export function in_memory_state_behavior<T>(): StateBehavior<T> {
 	const state: InMemoryState<T> = { current: undefined };
 
 	return (get, set) => {
@@ -61,7 +61,7 @@ export function in_memory_state_behaviour<T>(): StateBehaviour<T> {
 
 const memory_storage = local_storage();
 
-export function local_storage_state_behaviour<T>(key: string): StateBehaviour<T> {
+export function local_storage_state_behavior<T>(key: string): StateBehavior<T> {
 	return (get, set) => {
 		get.add({
 			type: "get-state-from-local-storage",
@@ -84,7 +84,7 @@ export function local_storage_state_behaviour<T>(key: string): StateBehaviour<T>
 	};
 }
 
-export function default_value_state_behaviour<T>(default_value: T): StateBehaviour<T> {
+export function default_value_state_behavior<T>(default_value: T): StateBehavior<T> {
 	return (get) => {
 		get.add({
 			type: "get-state-from-default-value",
@@ -101,7 +101,7 @@ interface ApiOptions<T> {
 	mutate: (...args: any[]) => Promise<boolean>;
 }
 
-export function api_state_behaviour<T>({ query, mutate }: ApiOptions<T>): StateBehaviour<T> {
+export function api_state_behavior<T>({ query, mutate }: ApiOptions<T>): StateBehavior<T> {
 	return (get, set) => {
 		get.add({
 			process: async (arg, api) => {
@@ -120,17 +120,17 @@ export function api_state_behaviour<T>({ query, mutate }: ApiOptions<T>): StateB
 	};
 }
 
-export function state_synchronization_behaviour<T>(
-	...behaviours: StateBehaviour<T>[]
-): StateBehaviour<T> {
+export function state_synchronization_behavior<T>(
+	...behaviors: StateBehavior<T>[]
+): StateBehavior<T> {
 	return (_, set) => {
 		const init = pipeline({
 			request: (): StateArgs<T | undefined> => ({ state: undefined }),
 			response: (arg) => arg.state,
 		});
 
-		behaviours.forEach((behaviour) => {
-			behaviour(init, set);
+		behaviors.forEach((behavior) => {
+			behavior(init, set);
 		});
 
 		const initial = init.run();
@@ -140,7 +140,7 @@ export function state_synchronization_behaviour<T>(
 	};
 }
 
-type EventsBehaviour<T, E> = (
+type EventsBehavior<T, E> = (
 	get: Pipeline<[], StateArgs<T | undefined>, T | undefined>,
 	set: Pipeline<[next: T], StateArgs<T>, void>,
 	fire: EventEngine<E>["fire"],
@@ -149,7 +149,7 @@ type EventsBehaviour<T, E> = (
 
 type ChangeEvent<T> = { change: T };
 
-export function fire_change_event_on_set_behaviour<T>(): EventsBehaviour<T, ChangeEvent<T>> {
+export function fire_change_event_on_set_behavior<T>(): EventsBehavior<T, ChangeEvent<T>> {
 	return (_get, set, fire, _listen) => {
 		set.add({
 			type: "fire-change-event-on-set",
@@ -160,7 +160,7 @@ export function fire_change_event_on_set_behaviour<T>(): EventsBehaviour<T, Chan
 	};
 }
 
-export function listening_change_event_behaviour<T>(): EventsBehaviour<T, ChangeEvent<T>> {
+export function listening_change_event_behavior<T>(): EventsBehavior<T, ChangeEvent<T>> {
 	return (get, _set, _fire, listen) => {
 		listen({
 			type: "listening:change",
@@ -176,9 +176,7 @@ export function listening_change_event_behaviour<T>(): EventsBehaviour<T, Change
 
 type CleanupEvent = { cleanup: void };
 
-export function listen_cleanup_event_behaviour<T>(
-	clean_value?: T,
-): EventsBehaviour<T, CleanupEvent> {
+export function listen_cleanup_event_behavior<T>(clean_value?: T): EventsBehavior<T, CleanupEvent> {
 	return (_get, set, _fire, listen) => {
 		listen({
 			type: "cleanup",
@@ -189,8 +187,8 @@ export function listen_cleanup_event_behaviour<T>(
 	};
 }
 
-type AccesserBehaviour<T, R extends Lambda = any> = (
-	accesser: Pipeline<
+type AccessorBehavior<T, R extends Lambda = any> = (
+	accessor: Pipeline<
 		[params: Arguments<R>],
 		{ state?: Returns<R>; params: Arguments<R> },
 		Returns<R> | undefined
@@ -199,15 +197,15 @@ type AccesserBehaviour<T, R extends Lambda = any> = (
 	set: PipelineRunner<[next: T], void>,
 ) => void;
 
-type SingleAccesser<T> = {
+type SingleAccessor<T> = {
 	(): T;
 	(next: Partial<T>): void;
 };
 
-export function single_accesser_behaviour<T>(): AccesserBehaviour<T, SingleAccesser<T>> {
-	return (accesser, get, set) => {
-		accesser.add({
-			type: "get-state-as-single-accesser",
+export function single_accessor_behavior<T>(): AccessorBehavior<T, SingleAccessor<T>> {
+	return (accessor, get, set) => {
+		accessor.add({
+			type: "get-state-as-single-accessor",
 			process: (arg, api) => {
 				const { params } = arg;
 
@@ -218,8 +216,8 @@ export function single_accesser_behaviour<T>(): AccesserBehaviour<T, SingleAcces
 			},
 		});
 
-		accesser.add({
-			type: "set-state-as-single-accesser",
+		accessor.add({
+			type: "set-state-as-single-accessor",
 			process: (arg, api) => {
 				const { params } = arg;
 
@@ -240,19 +238,19 @@ export function single_accesser_behaviour<T>(): AccesserBehaviour<T, SingleAcces
 	};
 }
 
-type KeyValueAccesser<T extends Record<string, any>> = {
+type KeyValueAccessor<T extends Record<string, any>> = {
 	<K extends keyof T>(key: K): T[K];
 	<K extends keyof T>(key: K, next: T[K]): void;
 };
 
-export function key_value_accesser_behaviour<T extends Record<string, any>>(): AccesserBehaviour<
+export function key_value_accessor_behavior<T extends Record<string, any>>(): AccessorBehavior<
 	T,
-	KeyValueAccesser<T>
+	KeyValueAccessor<T>
 > {
-	return (accesser, get, set) => {
-		accesser.add({
-			type: "get-state-as-key-value-accesser",
-			before: "get-state-as-single-accesser",
+	return (accessor, get, set) => {
+		accessor.add({
+			type: "get-state-as-key-value-accessor",
+			before: "get-state-as-single-accessor",
 			process: (arg, api) => {
 				const { params } = arg;
 
@@ -268,9 +266,9 @@ export function key_value_accesser_behaviour<T extends Record<string, any>>(): A
 			},
 		});
 
-		accesser.add({
-			type: "set-state-as-key-value-accesser",
-			before: "set-state-as-single-accesser",
+		accessor.add({
+			type: "set-state-as-key-value-accessor",
+			before: "set-state-as-single-accessor",
 			process: (arg, api) => {
 				const { params } = arg;
 
@@ -286,19 +284,16 @@ export function key_value_accesser_behaviour<T extends Record<string, any>>(): A
 	};
 }
 
-type IndexAccesser<T extends any[]> = {
+type IndexAccessor<T extends any[]> = {
 	(key: number): T[number];
 	(key: number, next: T[number]): void;
 };
 
-export function index_accesser_behaviour<T extends any[]>(): AccesserBehaviour<
-	T,
-	IndexAccesser<T>
-> {
-	return (accesser, get, set) => {
-		accesser.add({
-			type: "get-state-as-index-accesser",
-			before: "get-state-as-single-accesser",
+export function index_accessor_behavior<T extends any[]>(): AccessorBehavior<T, IndexAccessor<T>> {
+	return (accessor, get, set) => {
+		accessor.add({
+			type: "get-state-as-index-accessor",
+			before: "get-state-as-single-accessor",
 			process: (arg, api) => {
 				const { params } = arg;
 
@@ -314,9 +309,9 @@ export function index_accesser_behaviour<T extends any[]>(): AccesserBehaviour<
 			},
 		});
 
-		accesser.add({
-			type: "set-state-as-index-accesser",
-			before: "set-state-as-single-accesser",
+		accessor.add({
+			type: "set-state-as-index-accessor",
+			before: "set-state-as-single-accessor",
 			process: (arg, api) => {
 				const { params } = arg;
 
@@ -344,7 +339,7 @@ type EngineBehaviour<T, R> = <E>(
 	listen: EventEngine<E>["listen"],
 ) => void;
 
-function events_engine_behaiovr<T, E>(): EngineBehaviour<T, EventEngine<E>> {
+function events_engine_behavior<T, E>(): EngineBehaviour<T, EventEngine<E>> {
 	return (engine, _get, _set, fire, listen) => {
 		engine.add({
 			type: "event-engine-to-engine",
@@ -356,56 +351,56 @@ function events_engine_behaiovr<T, E>(): EngineBehaviour<T, EventEngine<E>> {
 	};
 }
 
-export function state_adapter<T>(...behaviours: StateBehaviour<T>[]): StateBehaviour<T> {
-	return (get, set) => behaviours.forEach((behaviour) => behaviour(get, set));
+export function state_adapter<T>(...behaviors: StateBehavior<T>[]): StateBehavior<T> {
+	return (get, set) => behaviors.forEach((behavior) => behavior(get, set));
 }
 
 export interface EventAdapter {
-	<T, E>(behaviour: EventsBehaviour<T, E>): EventsBehaviour<T, E>;
-	<T, E1, E2>(
-		behaviour_1: EventsBehaviour<T, E1>,
-		behaviour_2: EventsBehaviour<T, E2>,
-	): EventsBehaviour<T, E1 & E2>;
+	<T, E>(behavior: EventsBehavior<T, E>): EventsBehavior<T, E>;
+	<T, E1, E2>(behavior_1: EventsBehavior<T, E1>, behavior_2: EventsBehavior<T, E2>): EventsBehavior<
+		T,
+		E1 & E2
+	>;
 	<T, E1, E2, E3>(
-		behaviour_1: EventsBehaviour<T, E1>,
-		behaviour_2: EventsBehaviour<T, E2>,
-		behaviour_3: EventsBehaviour<T, E3>,
-	): EventsBehaviour<T, E1 & E2 & E3>;
+		behavior_1: EventsBehavior<T, E1>,
+		behavior_2: EventsBehavior<T, E2>,
+		behavior_3: EventsBehavior<T, E3>,
+	): EventsBehavior<T, E1 & E2 & E3>;
 }
 
 export const event_adapter: EventAdapter = <T, E>(
-	...behaviours: EventsBehaviour<T, E>[]
-): EventsBehaviour<T, E> => {
+	...behaviors: EventsBehavior<T, E>[]
+): EventsBehavior<T, E> => {
 	return (get, set, fire, listen) =>
-		behaviours.forEach((behaviour) => behaviour(get, set, fire, listen));
+		behaviors.forEach((behavior) => behavior(get, set, fire, listen));
 };
 
-export interface AccesserAdapter {
-	<T, R extends Lambda>(behaviour: AccesserBehaviour<T, R>): AccesserBehaviour<T, R>;
+export interface accessorAdapter {
+	<T, R extends Lambda>(behavior: AccessorBehavior<T, R>): AccessorBehavior<T, R>;
 	<T, R1 extends Lambda, R2 extends Lambda>(
-		behaviour_1: AccesserBehaviour<T, R1>,
-		behaviour_2: AccesserBehaviour<T, R2>,
-	): AccesserBehaviour<T, R1 & R2>;
+		behavior_1: AccessorBehavior<T, R1>,
+		behavior_2: AccessorBehavior<T, R2>,
+	): AccessorBehavior<T, R1 & R2>;
 }
 
-export const accesser_adapter: AccesserAdapter = <T, R extends Lambda>(
-	...behaviours: AccesserBehaviour<T, R>[]
-): AccesserBehaviour<T, R> => {
-	return (accesser, get, set) => behaviours.forEach((behaviour) => behaviour(accesser, get, set));
+export const accessor_adapter: accessorAdapter = <T, R extends Lambda>(
+	...behaviors: AccessorBehavior<T, R>[]
+): AccessorBehavior<T, R> => {
+	return (accessor, get, set) => behaviors.forEach((behavior) => behavior(accessor, get, set));
 };
 
-type StrenBehaviourOptions<T, E, R extends Lambda, A> = {
-	state?: StateBehaviour<T>;
-	events?: EventsBehaviour<T, E>;
-	accesser?: AccesserBehaviour<T, R>;
+type SyrenBehaviorOptions<T, E, R extends Lambda, A> = {
+	state?: StateBehavior<T>;
+	events?: EventsBehavior<T, E>;
+	accessor?: AccessorBehavior<T, R>;
 	engine?: EngineBehaviour<T, E>;
 };
 
-export const syren = <T, E, R extends Lambda, A>(options?: StrenBehaviourOptions<T, E, R, A>) => {
+export const syren = <T, E, R extends Lambda, A>(options?: SyrenBehaviorOptions<T, E, R, A>) => {
 	const { get, set } = state_engine<T>();
 	const { fire, listen } = event_engine<E>();
 
-	const accesser = pipeline({
+	const accessor = pipeline({
 		request: (params: Arguments<R>): { state?: Returns<R>; params: Arguments<R> } => ({ params }),
 		response: (arg) => arg.state,
 	});
@@ -417,40 +412,40 @@ export const syren = <T, E, R extends Lambda, A>(options?: StrenBehaviourOptions
 
 	if (options) {
 		options.state?.(get, set);
-		options.accesser?.(accesser, get.run, set.run);
+		options.accessor?.(accessor, get.run, set.run);
 		options.engine?.(engine, get, set, fire, listen);
 	}
 
-	return Object.assign(accesser.run as R, engine.run());
+	return Object.assign(accessor.run as R, engine.run());
 };
 
 export type SignalEvents<T> = { change: T; cleanup: void };
 
 export const signal = <T>(initial: T) => {
 	return syren({
-		state: state_adapter<T>(in_memory_state_behaviour(), default_value_state_behaviour(initial)),
-		// events: event_adapter(
-		//   fire_change_event_on_set_behaviour(),
-		//   listen_cleanup_event_behaviour(),
-		//   listening_change_event_behaviour(),
-		// ),
-		accesser: single_accesser_behaviour(),
-		engine: events_engine_behaiovr(),
+		state: state_adapter<T>(in_memory_state_behavior(), default_value_state_behavior(initial)),
+		events: event_adapter(
+			fire_change_event_on_set_behavior(),
+			listen_cleanup_event_behavior(),
+			listening_change_event_behavior(),
+		),
+		accessor: single_accessor_behavior(),
+		engine: events_engine_behavior(),
 	});
 };
 
 // export const storage = <T extends any[]>(initial?: T) => {
 //   return syren({
-//     state: state_adapter<T>(in_memory_state_behaviour(), default_value_state_behaviour(initial)),
-//     accesser: accesser_adapter(single_accesser_behaviour(), index_accesser_behaviour()),
+//     state: state_adapter<T>(in_memory_state_behavior(), default_value_state_behavior(initial)),
+//     accessor: accessor_adapter(single_accessor_behavior(), index_accessor_behavior()),
 //   });
 // };
 
-export const syren2 = (...behaviours: Lambda[]) => {
+export const syren2 = (...behaviors: Lambda[]) => {
 	const args: any[] = [];
 	const engine = {};
 
-	behaviours.forEach((behavior) => {
+	behaviors.forEach((behavior) => {
 		const result = behavior(...args);
 		args.push(result.args);
 		Object.assign(engine, result.engine);
@@ -464,18 +459,18 @@ syren2(
 	() => {
 		const { get, set } = state_engine();
 
-		in_memory_state_behaviour()(get, set);
+		in_memory_state_behavior()(get, set);
 
-		const accesser = pipeline({
+		const accessor = pipeline({
 			request: (params: any): { state?: any; params: any } => ({ params }),
 			response: (arg) => arg.state,
 		});
 
-		single_accesser_behaviour()(accesser, get.run, set.run);
+		single_accessor_behavior()(accessor, get.run, set.run);
 
 		return {
 			args: { get, set },
-			engine: accesser.run,
+			engine: accessor.run,
 		};
 	},
 	(state) => {

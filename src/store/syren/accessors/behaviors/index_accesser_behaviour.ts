@@ -1,23 +1,22 @@
-import { is_array, is_string } from "@nagisham/standard";
+import { is_array, is_number } from "@nagisham/standard";
 
-import { AccesserBehaviour } from "../types";
-import { KeyValueAccesser } from "./types";
+import { AccessorBehavior } from "../types";
+import { IndexAccesser } from "./types";
 
-export function key_value_accesser_behaviour<T extends Record<string, any>>(): AccesserBehaviour<
-	T,
-	KeyValueAccesser<T>
-> {
+export function index_accesser_behaviour<T extends any[]>(): AccessorBehavior<T, IndexAccesser<T>> {
 	return (accesser, get, set) => {
 		accesser.register({
 			patch: { mode: "before", name: "get-state-as-single-accesser" },
 			handler: {
-				name: "get-state-as-key-value-accesser",
+				name: "get-state-as-index-accesser",
 				handle: (arg, api) => {
 					const { params } = arg;
+
 					if (is_array(params, 1)) {
 						const [key] = params;
 						const state = get();
-						if (state && is_string(key)) {
+
+						if (state && is_number(key)) {
 							arg.state = state[key];
 							api.abort();
 						}
@@ -29,13 +28,18 @@ export function key_value_accesser_behaviour<T extends Record<string, any>>(): A
 		accesser.register({
 			patch: { mode: "before", name: "set-state-as-single-accesser" },
 			handler: {
-				name: "set-state-as-key-value-accesser",
+				name: "set-state-as-index-accesser",
 				handle: (arg, api) => {
 					const { params } = arg;
+
 					if (is_array(params, 2)) {
 						const [key, next] = params;
-						if (key) {
-							set(Object.assign({}, get(), { [key]: next }));
+						const state = get();
+
+						if (state && key) {
+							const old = state.slice() as T;
+							old.splice(key, 1, next);
+							set(old);
 							api.abort();
 						}
 					}

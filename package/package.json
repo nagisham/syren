@@ -18,6 +18,7 @@
   "main": "syren/index.js",
   "types": "syren/index.d.ts",
   "scripts": {
+    "link": "npm link",
     "push": "npm publish --access=public"
   },
   "dependencies": {

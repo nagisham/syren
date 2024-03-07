@@ -1,17 +1,17 @@
-import { Pipeline, Emiter, emiter } from "@nagisham/eventable";
-import { in_memory_provider } from "@nagisham/standard";
-import { accesser, single_accesser_behaviour } from "./accessers";
-import { State, state, state_behaviour } from "./state";
+import { Pipeline, Emitter, emitter } from "@nagisham/eventable";
+import { in_memory_provider, is_array } from "@nagisham/standard";
+import { accessor, single_accessor_behavior } from "./accessors";
+import { State, state, state_behavior } from "./state";
 
-type SytrenOptions<STATE, ACCESSOR, EVENTABLE, ENGINE> = {
+type SyrenOptions<STATE, ACCESSOR, EVENTABLE, ENGINE> = {
 	state: State<STATE>;
 	eventable: EVENTABLE;
 	accessor: (state: State<STATE>) => ACCESSOR;
 	engine?: (state: State<STATE>, eventable: EVENTABLE) => ENGINE;
 };
 
-export const syren = <STATE, ACCESSOR extends {}, EVENTABLE extends Emiter | Pipeline, ENGINE>(
-	options: SytrenOptions<STATE, ACCESSOR, EVENTABLE, ENGINE>,
+export const syren = <STATE, ACCESSOR extends {}, EVENTABLE extends Emitter | Pipeline, ENGINE>(
+	options: SyrenOptions<STATE, ACCESSOR, EVENTABLE, ENGINE>,
 ) => {
 	const { state, eventable, accessor, engine } = options;
 	return Object.assign(accessor(state), eventable, engine?.(state, eventable));
@@ -24,8 +24,9 @@ export type StoreEvents<T = any> = {
 
 export function signal<T>(initial?: T) {
 	return syren({
-		state: state(state_behaviour(in_memory_provider(initial))),
-		eventable: emiter<StoreEvents<T>>(),
-		accessor: accesser(single_accesser_behaviour()),
+		state: state(state_behavior(in_memory_provider(initial))),
+		eventable: emitter<StoreEvents<T>>(),
+		accessor: accessor(single_accessor_behavior()),
+		// engine:
 	});
 }
