@@ -5,7 +5,7 @@ import { SingleAccessor } from "./types";
 
 export function single_accessor_behavior<T>(): AccessorBehavior<T, SingleAccessor<T>> {
 	return (accessor, get, set) => {
-		accessor.register({
+		accessor.listen({
 			handler: {
 				name: "get-state-as-single-accessor",
 				handle: (arg, api) => {
@@ -19,7 +19,7 @@ export function single_accessor_behavior<T>(): AccessorBehavior<T, SingleAccesso
 			},
 		});
 
-		accessor.register({
+		accessor.listen({
 			handler: {
 				name: "set-state-as-single-accessor",
 				handle: (arg, api) => {

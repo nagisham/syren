@@ -1,3 +1,4 @@
-export { index_accesser_behaviour } from "./index_accesser_behaviour";
-export { key_value_accesser_behaviour } from "./key_value_accesser_behaviour";
-export { single_accessor_behavior as single_accessor_behavior } from "./single_accesser_behaviour";
+export { index_accessor_behavior } from "./index_accessor_behavior";
+export { key_value_accessor_behavior } from "./key_value_accessor_behavior";
+export { single_accessor_behavior } from "./single_accessor_behavior";
+export type { IndexAccessor, KeyValueAccessor, SingleAccessor } from "./types";

@@ -1,2 +1,2 @@
 export { accessor } from "./accessor";
-export * from "./behaviors";
+export type { AccessorBehavior } from "./types";

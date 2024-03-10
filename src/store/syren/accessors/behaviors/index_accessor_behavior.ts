@@ -1,14 +1,14 @@
 import { is_array, is_number } from "@nagisham/standard";
 
 import { AccessorBehavior } from "../types";
-import { IndexAccesser } from "./types";
+import { IndexAccessor } from "./types";
 
-export function index_accesser_behaviour<T extends any[]>(): AccessorBehavior<T, IndexAccesser<T>> {
-	return (accesser, get, set) => {
-		accesser.register({
-			patch: { mode: "before", name: "get-state-as-single-accesser" },
+export function index_accessor_behavior<T extends any[]>(): AccessorBehavior<T, IndexAccessor<T>> {
+	return (accessor, get, set) => {
+		accessor.listen({
+			patch: { mode: "before", name: "get-state-as-single-accessor" },
 			handler: {
-				name: "get-state-as-index-accesser",
+				name: "get-state-as-index-accessor",
 				handle: (arg, api) => {
 					const { params } = arg;
 
@@ -25,10 +25,10 @@ export function index_accesser_behaviour<T extends any[]>(): AccessorBehavior<T,
 			},
 		});
 
-		accesser.register({
-			patch: { mode: "before", name: "set-state-as-single-accesser" },
+		accessor.listen({
+			patch: { mode: "before", name: "set-state-as-single-accessor" },
 			handler: {
-				name: "set-state-as-index-accesser",
+				name: "set-state-as-index-accessor",
 				handle: (arg, api) => {
 					const { params } = arg;
 

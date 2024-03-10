@@ -1,17 +1,17 @@
 import { is_array, is_string } from "@nagisham/standard";
 
 import { AccessorBehavior } from "../types";
-import { KeyValueAccesser } from "./types";
+import { KeyValueAccessor } from "./types";
 
-export function key_value_accesser_behaviour<T extends Record<string, any>>(): AccessorBehavior<
+export function key_value_accessor_behavior<T extends Record<string, any>>(): AccessorBehavior<
 	T,
-	KeyValueAccesser<T>
+	KeyValueAccessor<T>
 > {
-	return (accesser, get, set) => {
-		accesser.register({
-			patch: { mode: "before", name: "get-state-as-single-accesser" },
+	return (accessor, get, set) => {
+		accessor.listen({
+			patch: { mode: "before", name: "get-state-as-single-accessor" },
 			handler: {
-				name: "get-state-as-key-value-accesser",
+				name: "get-state-as-key-value-accessor",
 				handle: (arg, api) => {
 					const { params } = arg;
 					if (is_array(params, 1)) {
@@ -26,10 +26,10 @@ export function key_value_accesser_behaviour<T extends Record<string, any>>(): A
 			},
 		});
 
-		accesser.register({
-			patch: { mode: "before", name: "set-state-as-single-accesser" },
+		accessor.listen({
+			patch: { mode: "before", name: "set-state-as-single-accessor" },
 			handler: {
-				name: "set-state-as-key-value-accesser",
+				name: "set-state-as-key-value-accessor",
 				handle: (arg, api) => {
 					const { params } = arg;
 					if (is_array(params, 2)) {

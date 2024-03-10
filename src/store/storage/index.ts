@@ -1,2 +1,2 @@
-export { storage } from './implementation';
-export type { ArrayEvents, Storage, StorageEngine } from './types';
+export { storage } from "./storage";
+export type { ArrayEvents, Storage, StorageStruct } from "./types";

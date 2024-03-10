@@ -4,7 +4,7 @@ import { StateBehavior } from "../types";
 
 export function state_behavior<VALUE>(provider: Provider<VALUE>): StateBehavior<VALUE> {
 	return (get, set, del) => {
-		get.register({
+		get.listen({
 			handler: (arg, api) => {
 				const state = provider.get();
 				if (is_not_null(state)) {
@@ -14,13 +14,13 @@ export function state_behavior<VALUE>(provider: Provider<VALUE>): StateBehavior<
 			},
 		});
 
-		set.register({
+		set.listen({
 			handler: (arg) => {
 				provider.set(arg.state);
 			},
 		});
 
-		del.register({
+		del.listen({
 			handler: (arg) => {
 				arg.deleted = provider.delete();
 			},

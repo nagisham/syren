@@ -1,12 +1,5 @@
 import { describe, test, assert } from "vitest";
 
-import {
-	state_engine,
-	in_memory_state_behavior,
-	local_storage_state_behavior,
-	default_value_state_behavior,
-} from "./implementation";
-
 describe("test state builder", () => {
 	describe("test in memory state", () => {
 		const state = state_engine({

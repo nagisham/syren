@@ -7,13 +7,13 @@ export function sync_state_behavior<VALUE>(provider: Provider<VALUE>): StateBeha
 		const initial = provider.get();
 		if (is_not_null(initial)) set.emit(initial);
 
-		set.register({
+		set.listen({
 			handler: (arg) => {
 				provider.set(arg.state);
 			},
 		});
 
-		del.register({
+		del.listen({
 			handler: (arg) => {
 				arg.deleted = provider.delete();
 			},
