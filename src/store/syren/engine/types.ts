@@ -1,12 +1,7 @@
-import { Pipeline } from "@nagisham/eventable";
-import { Arguments, Lambda, Returns } from "@nagisham/standard";
+import { Emitter, Pipeline } from "@nagisham/eventable";
+import { State } from "../state";
 
-export type EngineBehavior<T, R extends Lambda = any> = (
-	accessor: Pipeline<
-		{ state?: Returns<R>; params: Arguments<R> },
-		[params: Arguments<R>],
-		Returns<R> | undefined
-	>,
-	get: () => T | undefined,
-	set: (value: T) => void,
+export type EngineBehavior<S, E extends Emitter | Pipeline> = (
+	state: State<S>,
+	eventable: E,
 ) => void;

@@ -6,38 +6,38 @@ import { StoreEvents, WithPrevious } from "../types";
 import { SignalStruct } from "./.types";
 
 export const signal = struct<SignalStruct>(<T>(initial?: T) => {
-	const { get, set } = state_engine(initial);
-	const { fire, listen } = event_engine<StoreEvents<T | undefined>>();
+  const { get, set } = state_engine(initial);
+  const { fire, listen } = event_engine<StoreEvents<T | undefined>>();
 
-	listen({
-		type: "listening:change",
-		each: (listener) => {
-			is_not_null(get()) && listener(get());
-		},
-	});
+  listen({
+    type: "listening:change",
+    each: (listener) => {
+      is_not_null(get()) && listener(get());
+    },
+  });
 
-	listen({
-		type: "cleanup",
-		each: () => set(undefined),
-	});
+  listen({
+    type: "cleanup",
+    each: () => set(undefined),
+  });
 
-	function accesser(value?: T | WithPrevious<T | undefined>) {
-		if (is_null(value)) {
-			return get();
-		}
+  function accessor(value?: T | WithPrevious<T | undefined>) {
+    if (is_null(value)) {
+      return get();
+    }
 
-		const old = get();
-		const next = unpack(value, old);
+    const old = get();
+    const next = unpack(value, old);
 
-		if (!Object.is(old, next)) {
-			set(next);
-			fire("change", next);
-		}
+    if (!Object.is(old, next)) {
+      set(next);
+      fire("change", next);
+    }
 
-		return undefined;
-	}
+    return undefined;
+  }
 
-	return Object.assign(accesser, { fire, listen });
+  return Object.assign(accessor, { fire, listen });
 });
 
 const counter = signal(0);

@@ -1,17 +1,20 @@
-import { State } from "../../state";
+import { Emitter, Pipeline } from "@nagisham/eventable";
+import { EngineBehavior } from "../engine";
 
-export function emit_change_on_set_behavior<STATE, EVENTABLE, ENGINE>(): (
-	state: State<STATE>,
-	eventable: EVENTABLE,
-) => ENGINE {
-	return (state, eventable) => {
-		state.set.register({
-			handler: {
-				name: "emit-change-on-set",
-				handle: (arg) => {
-					eventable.emit("change", arg.state);
-				},
-			},
-		});
-	};
+export function emit_change_on_set_behavior<
+  S,
+  E extends Emitter | Pipeline
+>(): EngineBehavior<S, E, {}> {
+  return (state, eventable) => {
+    state.set.register({
+      handler: {
+        name: "emit-change-on-set",
+        handle: (arg) => {
+          eventable.emit("change", arg.state);
+        },
+      },
+    });
+
+    return {};
+  };
 }

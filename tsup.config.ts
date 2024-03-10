@@ -8,4 +8,5 @@ export default defineConfig({
 	clean: true,
 	sourcemap: true,
 	minify: "terser",
+	external: ['@nagisham/standard', '@nagisham/eventable']
 });

@@ -1,31 +1,30 @@
-import { pipeline } from "@nagisham/eventable";
-import { Arguments, Lambda, Returns } from "@nagisham/standard";
+import { Emitter, Pipeline } from "@nagisham/eventable";
 
-import { EngineBehavior } from "./types";
 import { State } from "../state";
 
-type Engine<S, R extends Lambda = any> = {
-	(state: State<S>): R;
+export type EngineBehavior<S, E extends Emitter | Pipeline, R extends Record<string, any>> = {
+  (state: State<S>, eventable: E): R;
 };
 
 interface EngineAdapter {
-	<T, R extends Lambda>(behavior: EngineBehavior<T, R>): Engine<T, R>;
-	<T, R1 extends Lambda, R2 extends Lambda>(
-		behavior_1: EngineBehavior<T, R1>,
-		behavior_2: EngineBehavior<T, R2>,
-	): Engine<T, R1 & R2>;
+  <T, E extends Emitter | Pipeline, R extends Record<string, any>>(
+    behavior: EngineBehavior<T, E, R>
+  ): EngineBehavior<T, E, R>;
+  <T, E extends Emitter | Pipeline, R1 extends Record<string, any>, R2 extends Record<string, any>>(
+    behavior_1: EngineBehavior<T, E, R1>,
+    behavior_2: EngineBehavior<T, E, R2>
+  ): EngineBehavior<T, E, R1 & R2>;
 }
 
-export const engine: EngineAdapter = <S, R extends Lambda = any>(
-	...behaviors: Array<EngineBehavior<S, R>>
+export const engine: EngineAdapter = <
+  S,
+  E extends Emitter | Pipeline,
+  R extends Record<string, any>
+>(
+  ...behaviors: Array<EngineBehavior<S, E, R>>
 ) => {
-	const access = pipeline({
-		request: (params: Arguments<R>): { state?: Returns<R>; params: Arguments<R> } => ({ params }),
-		response: (arg) => arg.state,
-	});
-
-	return (state: State<S>) => {
-		behaviors.forEach((behavior) => behavior(access, state.get.emit, state.set.emit));
-		return access.emit as R;
-	};
+  return (state: State<S>, eventable: E) => {
+    const engines = behaviors.map((behavior) => behavior(state, eventable));
+    return Object.assign({}, ...engines) as R;
+  };
 };
