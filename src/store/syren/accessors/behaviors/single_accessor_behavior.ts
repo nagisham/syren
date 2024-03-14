@@ -4,22 +4,22 @@ import { AccessorBehavior } from "../types";
 import { SingleAccessor } from "./types";
 
 export function single_accessor_behavior<T>(): AccessorBehavior<T, SingleAccessor<T>> {
-	return (accessor, get, set) => {
-		accessor.listen({
+	return ({ access, state: { get, set } }) => {
+		access.listen({
 			handler: {
 				name: "get-state-as-single-accessor",
 				handle: (arg, api) => {
 					const { params } = arg;
 
 					if (is_array(params, 0)) {
-						arg.state = get();
+						arg.state = get.emit();
 						api.abort();
 					}
 				},
 			},
 		});
 
-		accessor.listen({
+		access.listen({
 			handler: {
 				name: "set-state-as-single-accessor",
 				handle: (arg, api) => {
@@ -29,9 +29,9 @@ export function single_accessor_behavior<T>(): AccessorBehavior<T, SingleAccesso
 						const [next] = params;
 						if (next) {
 							if (typeof next === "object") {
-								set(Object.assign({}, get(), next));
+								set.emit(Object.assign({}, get.emit(), next));
 							} else {
-								set(next);
+								set.emit(next);
 							}
 
 							api.abort();

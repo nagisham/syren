@@ -7,7 +7,7 @@ export function emit_change_on_set_behavior<S, E extends Emitter | Pipeline>(): 
 	E,
 	{}
 > {
-	return (state, eventable) => {
+	return ({ state, eventable }) => {
 		state.set.listen({
 			handler: {
 				name: "emit-change-on-set",

@@ -3,8 +3,8 @@ import { Provider, is_not_null } from "@nagisham/standard";
 import { StateBehavior } from "../types";
 
 export function state_behavior<VALUE>(provider: Provider<VALUE>): StateBehavior<VALUE> {
-	return (get, set, del) => {
-		get.listen({
+	return ({ state }) => {
+		state.get.listen({
 			handler: (arg, api) => {
 				const state = provider.get();
 				if (is_not_null(state)) {
@@ -14,13 +14,13 @@ export function state_behavior<VALUE>(provider: Provider<VALUE>): StateBehavior<
 			},
 		});
 
-		set.listen({
+		state.set.listen({
 			handler: (arg) => {
 				provider.set(arg.state);
 			},
 		});
 
-		del.listen({
+		state.delete.listen({
 			handler: (arg) => {
 				arg.deleted = provider.delete();
 			},

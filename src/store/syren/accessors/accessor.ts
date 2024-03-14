@@ -5,7 +5,7 @@ import { AccessorBehavior } from "./types";
 import { State } from "../state";
 
 type Accessor<S, R extends Lambda = any> = {
-	(state: State<S>): R;
+	(options: { state: State<S> }): R;
 };
 
 interface AccessorAdapter {
@@ -18,14 +18,14 @@ interface AccessorAdapter {
 
 export const accessor: AccessorAdapter = <S, R extends Lambda = any>(
 	...behaviors: Array<AccessorBehavior<S, R>>
-) => {
+): Accessor<S, R> => {
 	const access = pipeline({
 		request: (params: Arguments<R>): { state?: Returns<R>; params: Arguments<R> } => ({ params }),
 		response: (arg) => arg.state,
 	});
 
-	return (state: State<S>) => {
-		behaviors.forEach((behavior) => behavior(access, state.get.emit, state.set.emit));
+	return ({ state }) => {
+		behaviors.forEach((behavior) => behavior({ access, state }));
 		return access.emit as R;
 	};
 };

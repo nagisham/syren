@@ -7,7 +7,7 @@ export function run_listener_on_listening_change_event_behavior<
 	S,
 	E extends Emitter<{ change: S }>,
 >(): EngineBehavior<S, E, {}> {
-	return (state, eventable) => {
+	return ({ state, eventable }) => {
 		eventable.listen({
 			type: "listening:change",
 			handler: (listener) => {

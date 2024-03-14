@@ -18,7 +18,9 @@ export function state<T>(...behaviors: Array<StateBehavior<T>>): State<T> {
 		response: (arg) => arg.deleted,
 	});
 
-	behaviors.forEach((behavior) => behavior(get, set, del));
+	const state = { get, set, delete: del };
 
-	return { get, set, delete: del };
+	behaviors.forEach((behavior) => behavior({ state }));
+
+	return state;
 }

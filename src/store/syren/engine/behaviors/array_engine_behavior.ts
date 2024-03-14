@@ -24,7 +24,7 @@ export function array_engine_behavior<
 >(): EngineBehavior<S, E, ArrayEngine<S[number]>> {
 	type T = S[number];
 
-	return ({ get, set }, eventable) => {
+	return ({ state: { get, set }, eventable }) => {
 		function copy() {
 			return get.emit()!.slice() as T;
 		}

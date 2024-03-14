@@ -7,8 +7,8 @@ export function key_value_accessor_behavior<T extends Record<string, any>>(): Ac
 	T,
 	KeyValueAccessor<T>
 > {
-	return (accessor, get, set) => {
-		accessor.listen({
+	return ({ access, state: { get, set } }) => {
+		access.listen({
 			patch: { mode: "before", name: "get-state-as-single-accessor" },
 			handler: {
 				name: "get-state-as-key-value-accessor",
@@ -16,7 +16,7 @@ export function key_value_accessor_behavior<T extends Record<string, any>>(): Ac
 					const { params } = arg;
 					if (is_array(params, 1)) {
 						const [key] = params;
-						const state = get();
+						const state = get.emit();
 						if (state && is_string(key)) {
 							arg.state = state[key];
 							api.abort();
@@ -26,7 +26,7 @@ export function key_value_accessor_behavior<T extends Record<string, any>>(): Ac
 			},
 		});
 
-		accessor.listen({
+		access.listen({
 			patch: { mode: "before", name: "set-state-as-single-accessor" },
 			handler: {
 				name: "set-state-as-key-value-accessor",
@@ -35,7 +35,7 @@ export function key_value_accessor_behavior<T extends Record<string, any>>(): Ac
 					if (is_array(params, 2)) {
 						const [key, next] = params;
 						if (key) {
-							set(Object.assign({}, get(), { [key]: next }));
+							set.emit(Object.assign({}, get.emit(), { [key]: next }));
 							api.abort();
 						}
 					}
